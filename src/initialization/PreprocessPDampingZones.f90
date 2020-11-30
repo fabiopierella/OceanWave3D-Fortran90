@@ -84,9 +84,11 @@ Do i=1,NDampZones
       IWK = PDampZones(i)%Lop%nnz + ifil + 1
       droptol = 0.000
       workspaceSize =(nd+3)*(1+2) +1 
-      ALLOCATE(PDampZones(i)%Lop%alu(IWK),PDampZones(i)%Lop%jlu(IWK),PDampZones(i)%Lop%ju(nd),PDampZones(i)%Lop%w(workspaceSize),PDampZones(i)%Lop%jw(3*nd))
+      ALLOCATE(PDampZones(i)%Lop%alu(IWK),PDampZones(i)%Lop%jlu(IWK), &
+      PDampZones(i)%Lop%ju(nd),PDampZones(i)%Lop%w(workspaceSize),PDampZones(i)%Lop%jw(3*nd))
 
-      CALL ILUT(nd,PDampZones(i)%Lop%val,PDampZones(i)%Lop%icn,PDampZones(i)%Lop%irn,ifil,droptol,PDampZones(i)%Lop%alu,PDampZones(i)%Lop%jlu,PDampZones(i)%Lop%ju,IWK,PDampZones(i)%Lop%w,PDampZones(i)%Lop%jw,ierrSPK)
+      CALL ILUT(nd,PDampZones(i)%Lop%val,PDampZones(i)%Lop%icn,PDampZones(i)%Lop%irn,ifil,droptol, &
+      PDampZones(i)%Lop%alu,PDampZones(i)%Lop%jlu,PDampZones(i)%Lop%ju,IWK,PDampZones(i)%Lop%w,PDampZones(i)%Lop%jw,ierrSPK)
    
    
    

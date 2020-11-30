@@ -16,8 +16,10 @@ BUILDDIR = $(PWD)/buildRelease
 
 FC = gfortran
 PLATFORM = jess
+USER = fabpi
 # Then the blocks for specific users (this clobbers the above info.)
 # -lma41  -lma27 -lmi24 -lhsl_mi20
+
 ifeq ($(PLATFORM),gbar)
   LINLIB = 
   DBFLAGS = -I/usr/lib64/gfortran/modules
@@ -45,6 +47,13 @@ ifeq ($(FC),ifort)
   LINLIB   += -lopenblas -lma27 -lma41 
   DBFLAGS  += -g -CB -fpe0 -fpstkchk  -traceback 
   OPTFLAGS += -O3 -tpp7
+endif
+
+ifeq ($(USER),fabpi)
+  LIBDIRS  = -L$(HOME)/lib/  -L/usr/lib/x86_64-linux-gnu/hdf5/serial
+  LINLIB   = -lopenblas -lskit -lhdf5 -lhdf5_fortran -lhdf5_hl
+  DBFLAGS  = -g -I/usr/include/hdf5/serial
+  OPTFLAGS = -O3 -I/usr/include/hdf5/serial
 endif
 
 print-%  : ; @echo $* = $($*)
