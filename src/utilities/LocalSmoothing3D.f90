@@ -151,7 +151,7 @@ SUBROUTINE LocalSmoothing3D(nx,ny,nz,itime,fop)
         !
         WRITE(fop,11)
         DO i=1,N_smoothed
-           WRITE(fop,12)(itime-1)*dt,x(i_smoothed(i),j_smoothed(i)),                &
+           WRITE(fop,'(es25.12)')(itime-1)*dt,x(i_smoothed(i),j_smoothed(i)),                &
                 y(i_smoothed(i),j_smoothed(i)),Wt(i_smoothed(i),j_smoothed(i))
         END DO
 11      FORMAT()
