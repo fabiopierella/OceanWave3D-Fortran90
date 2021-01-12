@@ -341,7 +341,7 @@ SUBROUTINE ReadInputFileParameters
    Allocate (Output(nOutFiles))
    ! Allocate the fileNames 
    allocate(fntH5(nOutFiles))
-   fntH5 = (/(i,i=0,nOutFiles)/)
+   fntH5 = (/(int(i,8),i=0,nOutFiles)/)
 
    IF (nOutFiles>999)THEN
       print *, 'Max. 999 kinematics output files at this point.'
