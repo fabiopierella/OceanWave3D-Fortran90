@@ -137,7 +137,7 @@ SUBROUTINE LocalSmoothing2D(nx,ny,nz,itime,fop)
         !
         WRITE(fop,11)
         DO i=1,N_smoothed
-           WRITE(fop,'(es25.12)')(itime-1)*dt,x(i_smoothed(i),1),0.0,Wt(i_smoothed(i),1)
+           WRITE(fop,'4(es25.12)')(itime-1)*dt,x(i_smoothed(i),1),0.0,Wt(i_smoothed(i),1)
         END DO
 11      FORMAT()
 ! 12      FORMAT(4e16.4)
