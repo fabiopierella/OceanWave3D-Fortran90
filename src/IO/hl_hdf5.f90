@@ -208,7 +208,7 @@ module HL_HDF5 !High level HDF5 interface
 
         call h5pcreate_f(H5P_DATASET_CREATE_F, prop_id, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5p_create_f")        
-        CALL h5pset_deflate_f(prop_id, 5, hdferr)
+        ! CALL h5pset_deflate_f(prop_id, 5, hdferr)
         call h5pset_chunk_f(prop_id, size(chunk_dims), chunk_dims, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk")
 
@@ -216,13 +216,15 @@ module HL_HDF5 !High level HDF5 interface
                     &prop_id, H5P_DEFAULT_F, H5P_DEFAULT_F)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dcreate_f")
 
-        ! Storage in double precision: 8 bytes * 5 times the chunk in the cache * 
-        ! the size of the chunk
-        n_bytes_chunk = 8*5*product(chunk_dims) 
-
         call h5dget_access_plist_f(dataset_id, plist_id, hdferr)
+        dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dget_access_plist_f")
 
-        call h5pset_chunk_cache_f(plist_id, int(1033,8), n_bytes_chunk, 1.0 , hdferr)
+        ! Storage in double precision: 8 bytes * 1024 chunks in the cache * 
+        ! the size of the chunk
+        n_bytes_chunk = 1000*8*product(chunk_dims)
+        ! The second parameter should be hundred times the nr of chunks that can fit
+        ! in n_butes_chunk
+        call h5pset_chunk_cache_f(plist_id, int(1000*101,8), n_bytes_chunk, 1.0 , hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk_cache")
 
         call h5dclose_f(dataset_id, hdferr)
@@ -280,11 +282,12 @@ module HL_HDF5 !High level HDF5 interface
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:,:,:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"
@@ -330,11 +333,12 @@ end subroutine h5_write_2d_at_step
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:,:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"
@@ -434,11 +438,12 @@ end subroutine h5_write_2d_at_step
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"
