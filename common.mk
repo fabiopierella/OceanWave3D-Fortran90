@@ -15,15 +15,15 @@ LIBINSTALLDIR = $(HOME)/lib
 BUILDDIR = $(PWD)/buildRelease
 
 FC = gfortran
-PLATFORM = jess
+PLATFORM = gbar
 USER = jess
 # Then the blocks for specific users (this clobbers the above info.)
 # -lma41  -lma27 -lmi24 -lhsl_mi20
 
 ifeq ($(PLATFORM),gbar)
   LINLIB = 
-  DBFLAGS = -I/usr/lib64/gfortran/modules
-  OPTFLAGS = -I/usr/lib64/gfortran/modules
+  DBFLAGS = -I/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/include
+  OPTFLAGS = -I/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/include
 endif
 ifeq ($(PLATFORM),jess)
   LINLIB = -lma41
@@ -38,7 +38,7 @@ endif
 
 ifeq ($(FC),gfortran)
   # fabpi machine, gfortran
-  LIBDIRS  = -L$(HOME)/lib/  -L$(EBROOTOPENBLAS) -L$(EBROOTHDF5)/lib
+  LIBDIRS  = -L$(HOME)/lib/  -L$(MODULE_OPENBLAS_LIB_DIR) -L$(EBROOTHDF5)/lib -L/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/lib
   # LINLIB   += -lharwell -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
   LINLIB   += -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
   DBFLAGS  += -pg -g -fbounds-check -ffpe-trap=invalid,zero,overflow -ffree-line-length-none  -fno-automatic
