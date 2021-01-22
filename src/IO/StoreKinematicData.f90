@@ -85,9 +85,9 @@ IF(FORMATTYPE/=22)THEN
   ! as whole time series: usually, all the time steps of one dataset are read at one 
   ! particular x,y,z location
   
-  chunkdims1 = (/50*onei/)
-  chunkdims2 = (/ny_save, nx_save, 50*onei/)
-  chunkdims3 = (/nz_save, ny_save, nx_save, 50*onei/)
+  chunkdims1 = (/chunk_dim*onei/)
+  chunkdims2 = (/ny_save, nx_save, chunk_dim*onei/)
+  chunkdims3 = (/nz_save, ny_save, nx_save, chunk_dim*onei/)
   
   ! Dimensions of the extended dataset, when appending to an existing dataset.
   extdims1 = (/onei/)

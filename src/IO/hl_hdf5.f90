@@ -3,6 +3,7 @@ module HL_HDF5 !High level HDF5 interface
 
     USE HDF5 ! This module contains all necessary modules 
     USE ISO_C_BINDING
+    USE GlobalVariables, only : chunk_dim, n_chunks_in_cache
     IMPLICIT NONE
     INTEGER     ::   hdferr ! Error flag
 
@@ -219,12 +220,12 @@ module HL_HDF5 !High level HDF5 interface
         call h5dget_access_plist_f(dataset_id, plist_id, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dget_access_plist_f")
 
-        ! Storage in double precision: 8 bytes * 1024 chunks in the cache * 
+        ! Storage in double precision: 8 bytes * n_bytes_cache chunks in the cache * 
         ! the size of the chunk
-        n_bytes_chunk = 1000*8*product(chunk_dims)
+        n_bytes_chunk = n_chunks_in_cache*8*product(chunk_dims)
         ! The second parameter should be hundred times the nr of chunks that can fit
         ! in n_butes_chunk
-        call h5pset_chunk_cache_f(plist_id, int(1000*101,8), n_bytes_chunk, 1.0 , hdferr)
+        call h5pset_chunk_cache_f(plist_id, int(n_chunks_in_cache*101,8), n_bytes_chunk, 1.0 , hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk_cache")
 
         call h5dclose_f(dataset_id, hdferr)

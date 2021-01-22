@@ -47,10 +47,10 @@ dummy = check_return_value(hdferr, "h5_extend", "h5dclose")
 
 ! Storage in double precision: 8 bytes * 1024 chunks in the cache * 
 ! the size of the chunk
-n_bytes_chunk = 1000*8*product(chunk_dims)
+n_bytes_chunk = n_chunks_in_cache*8*product(chunk_dims)
 ! The second parameter should be hundred times the nr of chunks that can fit
 ! in n_butes_chunk
-call h5pset_chunk_cache_f(plist_id, int(1000*101,8), n_bytes_chunk, .0 , hdferr)
+call h5pset_chunk_cache_f(plist_id, int(n_chunks_in_cache*101,8), n_bytes_chunk, .0 , hdferr)
 dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk_cache")
 
 call h5dopen_f(file_id, dataset_name, dataset_id, hdferr, plist_id)

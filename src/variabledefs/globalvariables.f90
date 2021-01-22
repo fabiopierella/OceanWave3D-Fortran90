@@ -46,6 +46,7 @@ type(zoneKin), allocatable :: Zones(:)
 ! These values are important for restarting the simulations.
 ! THey tell us how much of the old hdf5 array we need to overwrite
 INTEGER, allocatable:: iRestartLocation(:), n_overwrites(:)
+INTEGER :: chunk_dim, n_chunks_in_cache
 
 ! Initial condition and wave generation flags
 Integer :: IC, IncWaveType
