@@ -39,7 +39,7 @@ type kinArray
     real(kind=long), allocatable :: X(:,:,:)
     real(kind=long), allocatable :: Y(:,:,:)
     real(kind=long), allocatable :: Z(:,:,:)
-    real(kind=long), allocatable :: time
+    real(kind=long) :: time
 
 end type kinArray
 
@@ -83,6 +83,7 @@ subroutine allocatePointers(inZone, nx_save, ny_save, nz_save)
     integer        :: i
 
     DO I=1,inZone%nSteps
+
         ALLOCATE(inZone%Kinematics(i)%U(nz_save, nx_save, ny_save))
         ALLOCATE(inZone%Kinematics(i)%V(nz_save, nx_save, ny_save))
         ALLOCATE(inZone%Kinematics(i)%W(nz_save, nx_save, ny_save))
@@ -138,6 +139,8 @@ subroutine allocatePointers(inZone, nx_save, ny_save, nz_save)
         inZone%Kinematics(i)%Eta = 0.;
         inZone%Kinematics(i)%Etax = 0.
         inZone%Kinematics(i)%Etay = 0.
+
+        inZone%Kinematics(i)%time = 0.
 
     END DO
 

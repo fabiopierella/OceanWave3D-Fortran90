@@ -203,8 +203,8 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
         call h5_write(h5file, 'position_y', y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is))                          
         call h5_write(h5file, 'position_z', z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is))
 
-        call increment_timestep_counter(Zones(io))
-        n_overwrites(io) = 0 ! we do not expect to overwrite any sample here since we only append
+        ! call increment_timestep_counter(Zones(io))
+        ! n_overwrites(io) = 0 ! we do not expect to overwrite any sample here since we only append
 
         IF(curvilinearOnOff/=0)THEN
         Print *, 'StoreKinematicData:  Saving horizontal fluid velocities is not yet implemented for curvilinear grids.'
@@ -335,6 +335,8 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
             ! TODO: save all variables 
             call cycle(Zones(io)%Kinematics)
 
+            Zones(io)%Kinematics(nKinSteps)%time = time0+it*dt
+            
             Zones(io)%Kinematics(nKinSteps)%X = x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
             Zones(io)%Kinematics(nKinSteps)%Y = y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
             Zones(io)%Kinematics(nKinSteps)%Z = z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
@@ -360,7 +362,6 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
             else
                 Zones(io)%Kinematics(nKinSteps)%Etay = 0.
             end if 
-            Zones(io)%Kinematics(nKinSteps)%time = time0+it*dt;
 
             call increment_timestep_counter(Zones(io)) ! signal that we have added another timestep
 
@@ -386,7 +387,7 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     
                     extended_dimension_id = 1
                     ! Save previous 100 time steps
-                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, (/(time0+i*dt, i=(it-nKinSteps), it, output(io)%tstride)/))
+                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, (/(Zones(io)%Kinematics(j)%time, j=1, nKinSteps, Output(io)%tstride)/))
 
                     extended_dimension_id = 4
                     

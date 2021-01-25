@@ -214,8 +214,8 @@ module HL_HDF5 !High level HDF5 interface
         call h5pset_chunk_f(prop_id, size(chunk_dims), chunk_dims, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk")
 
-        call h5dcreate_f(file_id, dataset_name, H5T_NATIVE_DOUBLE, dataspace_id, dataset_id, hdferr, &
-                    &prop_id, H5P_DEFAULT_F, H5P_DEFAULT_F)
+        call h5dcreate_f(file_id, dataset_name, H5T_NATIVE_DOUBLE, dataspace_id, dataset_id, &
+                    hdferr, prop_id, H5P_DEFAULT_F, H5P_DEFAULT_F)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dcreate_f")
 
         call h5dget_access_plist_f(dataset_id, plist_id, hdferr)
