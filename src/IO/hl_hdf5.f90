@@ -32,6 +32,7 @@ module HL_HDF5 !High level HDF5 interface
         module procedure h5_extend_1d
         module procedure h5_extend_2d
         module procedure h5_extend_3d
+        module procedure h5_extend_4d
     end interface     
 
     contains
@@ -243,6 +244,26 @@ module HL_HDF5 !High level HDF5 interface
         
     end subroutine h5_dataset_create_chunked
 
+    subroutine h5_extend_4d(file_name, dataset_name, extended_dimension_id, &
+        dims_ext, data)
+
+    ! Data must have the same bounds of dims_ext
+    ! Routine to insert a 3D array at a location
+
+    character(*) :: file_name, dataset_name
+    real(kind=8) :: data(:,:,:,:)
+    integer(HID_T) :: file_id, dataset_id, &
+        dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+        plist_id, n_bytes_chunk
+    logical :: dummy
+    integer(HSIZE_T) :: dims_ext(:)
+    integer(HSIZE_T),allocatable :: maxdims(:), &
+            dims_old(:), dims_new(:), offset(:), chunk_dims(:)
+    integer :: rank
+
+    include "h5_extend.f90"
+
+end subroutine h5_extend_4d
 
     ! 3D routines
     subroutine h5_write_3d(file_name, dataset_name, data)
