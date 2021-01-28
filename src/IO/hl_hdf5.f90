@@ -244,6 +244,30 @@ module HL_HDF5 !High level HDF5 interface
         
     end subroutine h5_dataset_create_chunked
 
+    subroutine h5_create_hard_link(file_name, dataset_target, dataset_source)
+
+            character(*) :: file_name, dataset_target, dataset_source
+            integer(HID_T) :: file_id, dataset_target_id, &
+                dataspace_id, prop_id, plist_id, filter_id
+            logical :: dummy, avail
+    
+            integer :: rank, filter_info
+            
+
+            call h5fopen_f(file_name, H5F_ACC_RDWR_F, file_id, hdferr);
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5fopen")
+
+            ! call h5dopen_f(file_id, dataset_target, dataset_target_id, hdferr)
+            ! dummy = check_return_value(hdferr, "h5_create_hard_link", "h5dopen_f")
+
+            call h5lcreate_hard_f(file_id, dataset_target, file_id, dataset_source, hdferr)
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5lcreate_hard_f")
+
+            call h5fclose_f(file_id, hdferr)
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5fclose")
+    
+    end subroutine h5_create_hard_link
+
     subroutine h5_extend_4d(file_name, dataset_name, extended_dimension_id, &
         dims_ext, data)
 

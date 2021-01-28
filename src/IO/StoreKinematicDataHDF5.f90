@@ -33,7 +33,8 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     REAL(KIND=long) ::              Vy(Nz,Nx,Ny),Vz(Nz,Nx,Ny)
     REAL(KIND=long) ::                           Wz(Nz,Nx,Ny)
     CHARACTER(LEN=30) :: h5file
-    INTEGER(HID_T) :: extended_dimension_id, nKinSteps
+    INTEGER(HID_T) :: extended_dimension_id, nKinSteps, extraSteps = 2, &
+                      nOutputKinSteps  
     INTEGER(HSIZE_T), ALLOCATABLE :: dims_ext(:)
     INTEGER(HSIZE_T), SAVE :: maxdims1(1), maxdims2(3), maxdims3(4), &
                         extdims1(1), extdims2(3), extdims3(4), lenTime, &
@@ -49,7 +50,10 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     hy => FineGrid%hy; eta => WaveField%E; etax => WaveField%Ex; etay => WaveField%Ey
     
     ! Save 50 times as many time steps as in t stride
-    nKinSteps = Output(io)%tstride * 50
+    ! We need also to store some extra steps, as we compute the kin acc with a central scheme
+    ! So at every time step, we compute the kin acc at two timesteps back
+    nKinSteps = Output(io)%tstride * 50 + extraSteps
+    nOutputKinSteps = Output(io)%tstride * 50
     
     ! Determine if we have to write at this timestep
     IF (it >= Output(io)%tbeg .and. it <= Output(io)%tend) THEN !
@@ -106,7 +110,7 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
         ! The kinematicsArray will hold 5 kinematics timesteps.
         ! They will be used to compute the kinematic acceleration at the location
         ! and the dynamics pressure, so that we can save it in the .h5 file.
-        call allocateZoneKin(Zones(io), nKinSteps)
+        call allocateZoneKin(Zones(io), nKinSteps, nOutputKinSteps)
         call allocatePointers(Zones(io), nx_save, ny_save, nz_save)
 
         ! If the time is zero, then we consider we are starting the simulation from scratch.
@@ -136,6 +140,7 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
                     & extdims3, maxdims3, chunkdims3)
         call h5_dataset_create_chunked(h5file, 'position_z', 4, &
                     & extdims3, maxdims3, chunkdims3)
+
         ! Velocity variables 
         call h5_dataset_create_chunked(h5file, 'velocity_u', 4, &
                     & extdims3, maxdims3, chunkdims3)
@@ -153,13 +158,14 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
                     & extdims3, maxdims3, chunkdims3)
                     
         ! Velocity V
+        call h5_create_hard_link(h5file, 'velocity_derivative_uy', 'velocity_derivative_vx')
         call h5_dataset_create_chunked(h5file, 'velocity_derivative_vy', 4, &
                     & extdims3, maxdims3, chunkdims3)      
         call h5_dataset_create_chunked(h5file, 'velocity_derivative_vz', 4, &
                     & extdims3, maxdims3, chunkdims3)                          
         ! Velocity W
-
-
+        call h5_create_hard_link(h5file, 'velocity_derivative_uz', 'velocity_derivative_wx')
+        call h5_create_hard_link(h5file, 'velocity_derivative_vz', 'velocity_derivative_wy')
         call h5_dataset_create_chunked(h5file, 'velocity_derivative_wz', 4, &
                     & extdims3, maxdims3, chunkdims3)      
 
@@ -372,13 +378,13 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
             end if 
 
             if (write_kinematics) then
-                if (mod(Zones(io)%number_of_saved_timesteps, nKinSteps) == 0) then 
+                if (mod(Zones(io)%number_of_saved_timesteps, nOutputKinSteps) == 0) then 
                     ! the array is full, save it
                     ! save it but remember to use the tstride to skip the unnecessary files
 
-                    extdims1 = (/nKinSteps/)
-                    extdims2 = (/ny_save, nx_save, nKinSteps/)
-                    extdims3 = (/nz_save, ny_save, nx_save, nKinSteps/)
+                    extdims1 = (/nOutputKinSteps/)
+                    extdims2 = (/ny_save, nx_save, nOutputKinSteps/)
+                    extdims3 = (/nz_save, ny_save, nx_save, nOutputKinSteps/)
 
                     if (.not.(allocated(dummy4d))) allocate(dummy4d(nz_save, nx_save, ny_save, onei*50))
                     if (.not.(allocated(dummy3d))) allocate(dummy3d(nx_save, ny_save, onei*50))
@@ -387,7 +393,7 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     
                     extended_dimension_id = 1
                     ! Save previous 100 time steps
-                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, (/(Zones(io)%Kinematics(j)%time, j=1, nKinSteps, Output(io)%tstride)/))
+                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, (/(Zones(io)%Kinematics(j)%time, j=1, nOutputKinSteps, Output(io)%tstride)/))
 
                     extended_dimension_id = 4
                     

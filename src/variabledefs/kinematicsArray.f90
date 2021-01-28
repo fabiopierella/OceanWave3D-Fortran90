@@ -47,19 +47,21 @@ type zoneKin
     type(kinArray), dimension(:), allocatable :: Kinematics !5: newest, 1:oldest
     integer(kind=long) :: number_of_saved_timesteps = 0
     integer :: id
-    integer(kind=long) :: nSteps
+    integer(kind=long) :: nSteps, nOutputSteps
+    
 end type zoneKin
 
 contains
 
-subroutine allocateZoneKin(inZone, nSteps)
+subroutine allocateZoneKin(inZone, nSteps, nOutputSteps)
 
 implicit none
 type(zoneKin) :: inZone
-INTEGER(kind=long) :: nSteps
+INTEGER(kind=long) :: nSteps, nOutputSteps
 
 allocate(inZone%Kinematics(nSteps))
 inZone%nSteps = nSteps
+inZone%nOutputSteps = nOutputSteps
 
 end subroutine allocateZoneKin
 
@@ -175,7 +177,7 @@ subroutine calculateKinAcceleration(inZone, dt, sigma, rho)
 
     nSteps = inZone%nSteps
 
-    time_steps = inZone%number_of_saved_timesteps
+    time_steps = 5 !inZone%number_of_saved_timesteps
     alpha = 2
     
     ! Construct the time array
@@ -240,7 +242,7 @@ subroutine arrayFromVariable3d(inZone, variable, stride, res)
     integer, allocatable :: k(:)
 
     allocate(k(size(res, 3)))
-    k = (/(i, i=1,inZone%nSteps, stride)/)
+    k = (/(i, i=1,inZone%nOutputSteps, stride)/)
 
     if (variable == 'Eta') then
         do i=1,size(k)
@@ -271,7 +273,7 @@ subroutine arrayFromVariable4d(inZone, variable, stride, res)
     integer, allocatable :: k(:)
 
     allocate(k(size(res, 4)))
-    k = (/(i, i=1,inZone%nSteps, stride)/)
+    k = (/(i, i=1,inZone%nOutputSteps, stride)/)
 
     if (variable == 'U') then
         do i=1,size(k)
