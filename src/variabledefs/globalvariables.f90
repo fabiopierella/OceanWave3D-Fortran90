@@ -46,7 +46,11 @@ type(zoneKin), allocatable :: Zones(:)
 ! These values are important for restarting the simulations.
 ! THey tell us how much of the old hdf5 array we need to overwrite
 INTEGER, allocatable:: iRestartLocation(:), n_overwrites(:)
-INTEGER :: chunk_dim, n_chunks_in_cache
+INTEGER :: chunk_dim = 10, n_chunks_in_cache = 100 ! For now they are hardcoded here
+INTEGER :: n_buffer_timesteps ! How many timesteps are in memory before being written to the HDF5 file.
+                              ! The higher this number, the larger RAM requirement you program will have.
+                              ! Setting it to 1 writes at every timestep. It creates a very inefficient file access pattern (large I/O overhead)
+                              ! 50 is a good compromise
 
 ! Initial condition and wave generation flags
 Integer :: IC, IncWaveType

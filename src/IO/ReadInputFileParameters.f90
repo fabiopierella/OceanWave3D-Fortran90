@@ -337,7 +337,7 @@ SUBROUTINE ReadInputFileParameters
 
   elseif(formattype==40) THEN ! h5 files save
    BACKSPACE(FILEIP(1))
-   READ (FILEIP(1),*) StoreDataONOFF, formattype, iKinematics, nOutFiles, chunk_dim, n_chunks_in_cache
+   READ (FILEIP(1),*) StoreDataONOFF, formattype, iKinematics, nOutFiles, n_buffer_timesteps
    Allocate (Output(nOutFiles))
    ! Allocate the fileNames 
    allocate(fntH5(nOutFiles))

@@ -49,11 +49,11 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     x => FineGrid%x; y => FineGrid%y; z => FineGrid%z; h => FineGrid%h; hx => FineGrid%hx
     hy => FineGrid%hy; eta => WaveField%E; etax => WaveField%Ex; etay => WaveField%Ey
     
-    ! Save 50 times as many time steps as in t stride
+    ! Save n_buffer_timesteps times as many time steps as in t stride
     ! We need also to store some extra steps, as we compute the kin acc with a central scheme
     ! So at every time step, we compute the kin acc at two timesteps back
-    nKinSteps = Output(io)%tstride * 50 + extraSteps
-    nOutputKinSteps = Output(io)%tstride * 50
+    nKinSteps = Output(io)%tstride * n_buffer_timesteps + extraSteps
+    nOutputKinSteps = Output(io)%tstride * n_buffer_timesteps
     
     ! Determine if we have to write at this timestep
     IF (it >= Output(io)%tbeg .and. it <= Output(io)%tend) THEN !
@@ -382,12 +382,12 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
                     ! the array is full, save it
                     ! save it but remember to use the tstride to skip the unnecessary files
 
-                    extdims1 = (/nOutputKinSteps/)
-                    extdims2 = (/ny_save, nx_save, nOutputKinSteps/)
-                    extdims3 = (/nz_save, ny_save, nx_save, nOutputKinSteps/)
+                    extdims1 = (/onei*n_buffer_timesteps/)
+                    extdims2 = (/ny_save, nx_save, onei*n_buffer_timesteps/)
+                    extdims3 = (/nz_save, ny_save, nx_save, onei*n_buffer_timesteps/)
 
-                    if (.not.(allocated(dummy4d))) allocate(dummy4d(nz_save, nx_save, ny_save, onei*50))
-                    if (.not.(allocated(dummy3d))) allocate(dummy3d(nx_save, ny_save, onei*50))
+                    if (.not.(allocated(dummy4d))) allocate(dummy4d(nz_save, nx_save, ny_save, onei*n_buffer_timesteps))
+                    if (.not.(allocated(dummy3d))) allocate(dummy3d(nx_save, ny_save, onei*n_buffer_timesteps))
 
                     WRITE(h5file, "(A18,I3.3,A3)") "WaveKinematicsZone",fntH5(io),".h5"
     
