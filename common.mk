@@ -22,25 +22,25 @@ USER = jess
 
 ifeq ($(PLATFORM),gbar)
   LINLIB = 
-  DBFLAGS = -I/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/include
-  OPTFLAGS = -I/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/include
+  INCLUDEDIRS = -I/zhome/08/f/75737/Downloads/hdf5-1.10.5/hdf5/include
+  INCLUDEDIRS = -I/zhome/08/f/75737/Downloads/hdf5-1.10.5/hdf5/include  
 endif
 ifeq ($(PLATFORM),jess)
   LINLIB = -lma41
-  DBFLAGS = -I$(EBROOTHDF5)/include -gdwarf-2
-  OPTFLAGS = -I$(EBROOTHDF5)/include
+  INCLUDEDIRS = -I$(EBROOTHDF5)/include -gdwarf-2
+  INCLUDEDIRS = -I$(EBROOTHDF5)/include
 endif
 ifeq ($(PLATFORM),sophia)
   LINLIB = -lma41
-  DBFLAGS = -I$(EBROOTHDF5)/include -gdwarf-2
-  OPTFLAGS = -I$(EBROOTHDF5)/include
+  INCLUDEDIRS = -I$(EBROOTHDF5)/include -gdwarf-2
+  INCLUDEDIRS = -I$(EBROOTHDF5)/include
 endif
 
 ifeq ($(FC),gfortran)
   # fabpi machine, gfortran
-  LIBDIRS  = -L$(HOME)/lib/  -L$(MODULE_OPENBLAS_LIB_DIR) -L$(EBROOTHDF5)/lib -L/zhome/08/f/75737/Downloads/hdf5-1.12.0-linux-centos7-x86_64-shared/lib
-  # LINLIB   += -lharwell -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
-  LINLIB   += -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
+  LIBDIRS  = -L$(HOME)/lib/ -L$(MODULE_OPENBLAS_LIB_DIR) 
+  LIBDIRS  += -L/zhome/08/f/75737/Downloads/hdf5-1.10.5/hdf5/lib/
+  LINLIB   += -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl 
   DBFLAGS  += -pg -g -fbounds-check -ffpe-trap=invalid,zero,overflow -ffree-line-length-none  -fno-automatic
   OPTFLAGS += -pg -O3 -ffree-line-length-none -fno-automatic -ffpe-trap=invalid,zero,overflow 
 endif

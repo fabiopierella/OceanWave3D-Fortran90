@@ -190,14 +190,19 @@ SUBROUTINE OceanWave3DTakeATimeStep
   ! If kinematics output is requested save it
   !
   IF(iKinematics/=0)THEN
-      IF (formattype.NE.30) THEN! Store binary kinematics files
+      IF (formattype==40) THEN! Store binary kinematics files
          Do i=1,nOutFiles
-            CALL StoreKinematicData(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &
+            CALL StoreKinematicDataHDF5(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &
                   FineGrid%Nz+GhostGridZ,i,tstep)
          ENDDO
       ELSEIF (formattype==30) THEN ! Store wave gauges in ASCII format
          CALL StoreWaveGauges(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &
                   FineGrid%Nz+GhostGridZ,2,tstep+1)         
+      ELSE
+         Do i=1,nOutFiles
+            CALL StoreKinematicData(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &
+                  FineGrid%Nz+GhostGridZ,i,tstep)
+         ENDDO
       ENDIF
         
   END IF
