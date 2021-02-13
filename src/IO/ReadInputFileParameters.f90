@@ -728,6 +728,7 @@ SUBROUTINE ReadInputFileParameters
         END IF
         STOP
      END IF
+36   Continue
      !
      ! Check that the seed values are negative and if not make them negative
      !
