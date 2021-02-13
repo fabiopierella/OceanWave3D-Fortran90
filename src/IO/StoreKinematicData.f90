@@ -24,7 +24,7 @@ LOGICAL :: extend, hdf5_file_exists, write_kinematics
 REAL(KIND=long), DIMENSION(:,:), POINTER :: x, y, h, hx, hy, eta, etax, etay
 REAL(KIND=long), DIMENSION(:), POINTER   :: z, tmpxval
 ! Automatic work space
-REAL(KIND=long) :: U(Nz,Nx,Ny), V(Nz,Nx,Ny), W(Nz,Nx,Ny), Wz(Nz,Nx,Ny), d(Nx,Ny)
+REAL(KIND=long) :: U(Nz,Nx,Ny), V(Nz,Nx,Ny), W(Nz,Nx,Ny), d(Nx,Ny)
 REAL(KIND=long) :: tmpx(Nx), tmpy(Ny)
 CHARACTER(len=30) :: form
 REAL(KIND=long) :: hint, etaint, dint
