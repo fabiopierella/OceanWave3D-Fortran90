@@ -15,7 +15,7 @@ LIBINSTALLDIR = $(HOME)/lib
 BUILDDIR = $(PWD)/buildRelease
 
 FC = gfortran
-PLATFORM = gbar
+PLATFORM = sophia
 USER = jess
 # Then the blocks for specific users (this clobbers the above info.)
 # -lma41  -lma27 -lmi24 -lhsl_mi20
@@ -28,12 +28,12 @@ endif
 ifeq ($(PLATFORM),jess)
   LINLIB = -lma41
   INCLUDEDIRS = -I$(EBROOTHDF5)/include -gdwarf-2
-  INCLUDEDIRS = -I$(EBROOTHDF5)/include
+  # INCLUDEDIRS = -I$(EBROOTHDF5)/include
 endif
 ifeq ($(PLATFORM),sophia)
   LINLIB = -lma41
   INCLUDEDIRS = -I$(EBROOTHDF5)/include -gdwarf-2
-  INCLUDEDIRS = -I$(EBROOTHDF5)/include
+  # INCLUDEDIRS = -I$(EBROOTHDF5)/include
 endif
 
 ifeq ($(FC),gfortran)

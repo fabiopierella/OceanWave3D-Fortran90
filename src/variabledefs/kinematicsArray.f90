@@ -48,6 +48,7 @@ type zoneKin
     integer(kind=long) :: number_of_saved_timesteps = 0
     integer :: id
     integer(kind=long) :: nSteps, nOutputSteps
+    REAL(KIND=long), ALLOCATABLE :: dummy3d(:,:,:), dummy4d(:,:,:,:)
     
 end type zoneKin
 
@@ -64,6 +65,17 @@ inZone%nSteps = nSteps
 inZone%nOutputSteps = nOutputSteps
 
 end subroutine allocateZoneKin
+
+subroutine allocateDummyArrays(inZone, nx_save, ny_save, nz_save, n_buffer_timesteps)
+
+    implicit none
+    type(zoneKin) :: inZone
+    INTEGER(kind=long) :: nx_save, nz_save, ny_save, n_buffer_timesteps
+    
+    allocate(inZone%dummy3d(nx_save, ny_save, n_buffer_timesteps))
+    allocate(inZone%dummy4d(nz_save, nx_save, ny_save, n_buffer_timesteps))
+   
+end subroutine allocateDummyArrays
 
 subroutine increment_timestep_counter(inZone)
     ! This subroutine increases a counter
@@ -327,12 +339,19 @@ subroutine arrayFromVariable4d(inZone, variable, stride, res)
 
     else if (variable == 'X') then
         do i=1,size(k)
+            ! ! print*, shape(res)
+            ! ! print*, shape(inZone%Kinematics(k(i))%X)
+            ! print*, 'k', k(i)
+            ! print*, 'i', i
+            ! print*, 'zone', inzone%id
+            ! print*, 'shape(res)', shape(res)
+            ! print*, 'shape(kin)', shape(inZone%Kinematics(k(i))%X)
             res(:, :, :, i)= inZone%Kinematics(k(i))%X
         end do
 
     else if (variable == 'Y') then
         do i=1,size(k)
-            res(:, :, :, i)= inZone%Kinematics(k(i))%X
+            res(:, :, :, i)= inZone%Kinematics(k(i))%Y
         end do
 
     else if (variable == 'Z') then

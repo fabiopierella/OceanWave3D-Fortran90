@@ -42,8 +42,6 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
                         
     INTEGER(HSIZE_T):: nx_save, ny_save, nz_save, onei = 1, zeroi = 0
     REAL(KIND=long) :: x3d(Nz, Ny, Nx), y3d(Nz, Ny, Nx), z3d(Nz, Ny, Nx)
-    REAL(KIND=long), ALLOCATABLE, SAVE :: timeStoredInHDF5(:), dummy2d(:,:), &
-       dummy3d(:,:,:), dummy4d(:,:,:,:), dummy(:)
     ! Assign the local pointers
     !
     x => FineGrid%x; y => FineGrid%y; z => FineGrid%z; h => FineGrid%h; hx => FineGrid%hx
@@ -112,6 +110,7 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
         ! and the dynamics pressure, so that we can save it in the .h5 file.
         call allocateZoneKin(Zones(io), nKinSteps, nOutputKinSteps)
         call allocatePointers(Zones(io), nx_save, ny_save, nz_save)
+        call allocateDummyArrays(Zones(io), nx_save, ny_save, nz_save, onei*n_buffer_timesteps)
 
         ! If the time is zero, then we consider we are starting the simulation from scratch.
         ! If we restart, we consider we do have these fields already.
@@ -205,9 +204,9 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
         end do
 
         extended_dimension_id = 4
-        call h5_write(h5file, 'position_x', x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is))                  
-        call h5_write(h5file, 'position_y', y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is))                          
-        call h5_write(h5file, 'position_z', z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is))
+        call h5_write(h5file, 'position_x', reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))              
+        call h5_write(h5file, 'position_y', reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
+        call h5_write(h5file, 'position_z', reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
 
         ! call increment_timestep_counter(Zones(io))
         ! n_overwrites(io) = 0 ! we do not expect to overwrite any sample here since we only append
@@ -343,9 +342,13 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
 
             Zones(io)%Kinematics(nKinSteps)%time = time0+it*dt
             
-            Zones(io)%Kinematics(nKinSteps)%X = x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
-            Zones(io)%Kinematics(nKinSteps)%Y = y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
-            Zones(io)%Kinematics(nKinSteps)%Z = z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
+            ! Zones(io)%Kinematics(nKinSteps)%X = x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
+            ! Zones(io)%Kinematics(nKinSteps)%Y = y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
+            ! Zones(io)%Kinematics(nKinSteps)%Z = z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
+
+            Zones(io)%Kinematics(nKinSteps)%X = reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
+            Zones(io)%Kinematics(nKinSteps)%Y = reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
+            Zones(io)%Kinematics(nKinSteps)%Z = reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
 
             Zones(io)%Kinematics(nKinSteps)%U = U(1+GhostGridZ:, i0:i1:is, j0:j1:js);
             Zones(io)%Kinematics(nKinSteps)%V = V(1+GhostGridZ:, i0:i1:is, j0:j1:js);
@@ -380,14 +383,11 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
             if (write_kinematics) then
                 if (mod(Zones(io)%number_of_saved_timesteps, nOutputKinSteps) == 0) then 
                     ! the array is full, save it
-                    ! save it but remember to use the tstride to skip the unnecessary files
+                    ! save it but remember to use the tstride to skip the unnecessary time steps
 
                     extdims1 = (/onei*n_buffer_timesteps/)
                     extdims2 = (/ny_save, nx_save, onei*n_buffer_timesteps/)
                     extdims3 = (/nz_save, ny_save, nx_save, onei*n_buffer_timesteps/)
-
-                    if (.not.(allocated(dummy4d))) allocate(dummy4d(nz_save, nx_save, ny_save, onei*n_buffer_timesteps))
-                    if (.not.(allocated(dummy3d))) allocate(dummy3d(nx_save, ny_save, onei*n_buffer_timesteps))
 
                     WRITE(h5file, "(A18,I3.3,A3)") "WaveKinematicsZone",fntH5(io),".h5"
     
@@ -397,113 +397,113 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
 
                     extended_dimension_id = 4
                     
-                    call arrayFromVariable4d(zones(io),'X', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'X', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'position_x', extended_dimension_id, extdims3, &
-                        & dummy4d)         
+                        & Zones(io)%dummy4d)         
 
                     
-                    call arrayFromVariable4d(zones(io),'Y', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Y', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'position_y', extended_dimension_id, extdims3, &
-                        & dummy4d) 
+                        & Zones(io)%dummy4d) 
 
-                    call arrayFromVariable4d(zones(io),'Z', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Z', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'position_z', extended_dimension_id, extdims3, &
-                        & dummy4d)
+                        & Zones(io)%dummy4d)
 
                     extended_dimension_id = 3
-                    call arrayFromVariable3d(zones(io),'Eta', output(io)%tstride, dummy3d)
+                    call arrayFromVariable3d(zones(io),'Eta', output(io)%tstride, Zones(io)%dummy3d)
                     call h5_extend(h5file, 'surface_elevation', extended_dimension_id, extdims2, &
-                        & dummy3d)
+                        & Zones(io)%dummy3d)
                     
                     ! Write only if there is more than one point in the x direction
                     if (FineGrid%Nx>1) then
-                        call arrayFromVariable3d(zones(io),'Etax', output(io)%tstride, dummy3d)
+                        call arrayFromVariable3d(zones(io),'Etax', output(io)%tstride, Zones(io)%dummy3d)
                         call h5_extend(h5file, 'surface_elevation_derivative_etax', extended_dimension_id, extdims2, &
-                        & dummy3d)
+                        & Zones(io)%dummy3d)
 
                     else ! just write 0s
-                        dummy3d = 0.
+                        Zones(io)%dummy3d = 0.
                         call h5_extend(h5file, 'surface_elevation_derivative_etax', extended_dimension_id, extdims2, &
-                        & dummy3d)     
+                        & Zones(io)%dummy3d)     
                     end if
 
                     ! Write only if there is more than one point in the y direction
                     if (FineGrid%Ny>1) then
-                        call arrayFromVariable3d(zones(io),'Etay', output(io)%tstride, dummy3d)                        
+                        call arrayFromVariable3d(zones(io),'Etay', output(io)%tstride, Zones(io)%dummy3d)                        
                         call h5_extend(h5file, 'surface_elevation_derivative_etay', extended_dimension_id, extdims2, &
-                        & dummy3d)
+                        & Zones(io)%dummy3d)
                     else ! just write 0s
-                        dummy3d = 0.                                            
+                        Zones(io)%dummy3d = 0.                                            
                         call h5_extend(h5file, 'surface_elevation_derivative_etay', extended_dimension_id, extdims2, &
-                        & dummy3d)
+                        & Zones(io)%dummy3d)
                     end if
                 
                     extended_dimension_id = 4
                     ! velocities
-                    call arrayFromVariable4d(zones(io),'U', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'U', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_u', extended_dimension_id, extdims3, &
-                    & dummy4d)
+                    & Zones(io)%dummy4d)
 
-                    call arrayFromVariable4d(zones(io),'V', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'V', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_v', extended_dimension_id, extdims3, &
-                    & dummy4d)
+                    & Zones(io)%dummy4d)
                     
-                    call arrayFromVariable4d(zones(io),'W', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'W', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_w', extended_dimension_id, extdims3, &
-                    & dummy4d)
+                    & Zones(io)%dummy4d)
                     
                     ! Potential
-                    call arrayFromVariable4d(zones(io),'phi', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'phi', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'potential_phi', extended_dimension_id, extdims3, &
-                    & dummy4d)    
+                    & Zones(io)%dummy4d)    
 
                     ! Kinematics accelerations and dynamics pressure
                     ! They are a little different from the others. Since we compute them with a centered scheme with 5 points
                     ! We need always to first extend the file, writing a "zero" value, so that it has the same nr. of points
                     ! as the other quantities.
                     
-                    call arrayFromVariable4d(zones(io),'Ut', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Ut', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_ut', extended_dimension_id, extdims3, &
-                    & dummy4d)    
+                    & Zones(io)%dummy4d)    
 
-                    call arrayFromVariable4d(zones(io),'Vt', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Vt', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_vt', extended_dimension_id, extdims3, &
-                    & dummy4d)    
+                    & Zones(io)%dummy4d)    
 
-                    call arrayFromVariable4d(zones(io),'Wt', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Wt', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_wt', extended_dimension_id, extdims3, &
-                    & dummy4d)
+                    & Zones(io)%dummy4d)
 
-                    call arrayFromVariable4d(zones(io),'pdyn', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'pdyn', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'dynamic_pressure_pdyn', extended_dimension_id, extdims3, &
-                    & dummy4d)
+                    & Zones(io)%dummy4d)
                     
                     ! velocity z gradients
-                    call arrayFromVariable4d(zones(io),'Uz', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Uz', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_uz', extended_dimension_id, extdims3, &
-                    & dummy4d)    
-                    call arrayFromVariable4d(zones(io),'Vz', output(io)%tstride, dummy4d)
+                    & Zones(io)%dummy4d)    
+                    call arrayFromVariable4d(zones(io),'Vz', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_vz', extended_dimension_id, extdims3, &
-                    & dummy4d)    
+                    & Zones(io)%dummy4d)    
 
-                    call arrayFromVariable4d(zones(io),'Wz', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Wz', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_wz', extended_dimension_id, extdims3, &
-                    & dummy4d)  
+                    & Zones(io)%dummy4d)  
 
 
                     ! velocity x gradients
-                    call arrayFromVariable4d(zones(io),'Ux', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Ux', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_ux', extended_dimension_id, extdims3, &
-                    & dummy4d)    
+                    & Zones(io)%dummy4d)    
                     
                     ! velocity y gradients
-                    call arrayFromVariable4d(zones(io),'Uy', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Uy', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_uy', extended_dimension_id, extdims3, &
-                    & dummy4d) 
+                    & Zones(io)%dummy4d) 
                     
-                    call arrayFromVariable4d(zones(io),'Vy', output(io)%tstride, dummy4d)
+                    call arrayFromVariable4d(zones(io),'Vy', output(io)%tstride, Zones(io)%dummy4d)
                     call h5_extend(h5file, 'velocity_derivative_vy', extended_dimension_id, extdims3, &
-                    & dummy4d)                
+                    & Zones(io)%dummy4d)                
 
                 end if
             end if 
