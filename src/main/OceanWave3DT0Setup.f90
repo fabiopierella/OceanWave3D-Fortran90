@@ -372,7 +372,7 @@ SUBROUTINE OceanWave3DT0Setup
 81 FORMAT('% Bottom bathymetry: ((x(i,j), y(i,j), h(i,j),h_x,h_xx,h_y,h_yy),j=1,Ny),i=1,Nx)')
    Do j=1,FineGrid%Ny+2*GhostGridY
      Do i=1,FineGrid%Nx+2*GhostGridX
-        write(Fileop(16),82) FineGrid%x(i,j),FineGrid%y(i,j),FineGrid%h(i,j),FineGrid%hx(i,j),FineGrid%hxx(i,j), &
+        write(Fileop(26),82) FineGrid%x(i,j),FineGrid%y(i,j),FineGrid%h(i,j),FineGrid%hx(i,j),FineGrid%hxx(i,j), &
              FineGrid%hy(i,j),FineGrid%hyy(i,j)
      end Do
   end Do
