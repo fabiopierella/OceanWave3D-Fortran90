@@ -17,8 +17,9 @@ BUILDDIR = $(PWD)/buildRelease
 FC = gfortran
 PLATFORM = sophia
 USER = jess
-# Then the blocks for specific users (this clobbers the above info.)
-# -lma41  -lma27 -lmi24 -lhsl_mi20
+# To profile the code: add -pg in OPTFLAGS / DBFLAGS
+# This will output gmon.out
+# Then you can run gprof to make the results human-readable
 
 ifeq ($(PLATFORM),gbar)
   LINLIB = 
@@ -41,8 +42,8 @@ ifeq ($(FC),gfortran)
   LIBDIRS  = -L$(HOME)/lib/ -L$(MODULE_OPENBLAS_LIB_DIR) 
   LIBDIRS  += -L/zhome/08/f/75737/Downloads/hdf5-1.10.5/hdf5/lib/
   LINLIB   += -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl 
-  DBFLAGS  += -pg -g -fbounds-check -ffpe-trap=invalid,zero,overflow -ffree-line-length-none  -fno-automatic
-  OPTFLAGS += -pg -O3 -ffree-line-length-none -fno-automatic -ffpe-trap=invalid,zero,overflow 
+  DBFLAGS  += -g -fbounds-check -ffpe-trap=invalid,zero,overflow -ffree-line-length-none  -fno-automatic
+  OPTFLAGS += -O3 -ffree-line-length-none -fno-automatic -ffpe-trap=invalid,zero,overflow 
 endif
 
 ifeq ($(FC),ifort)
