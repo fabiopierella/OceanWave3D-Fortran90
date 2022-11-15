@@ -45,7 +45,7 @@ RETURN
 
 ! ERROR HANDLING
 100 PRINT *,'Error: Problem with specified input file.'; 
-WRITE(fileop(1),*),'Error: Problem with specified input file.'
+WRITE(fileop(1),*) 'Error: Problem with specified input file.'
 STOP
 
 END SUBROUTINE Initialize

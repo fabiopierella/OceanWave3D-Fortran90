@@ -16,8 +16,8 @@ REAL(KIND=long), DIMENSION(Nz,Nx,Ny,2*alpha+1) :: StencilsX
 !
 rank = 2*alpha+1
 !
-DO i=1,Nx
-  	DO j = 1, Ny
+DO j = 1, Ny
+    DO i=1,Nx
         DO k = 1, Nz
             varX(k,i,j) = DOT_PRODUCT(StencilsX(k,i,j,1:rank),var(k,IndexesX(k,i,j,1:rank),j))
         END DO

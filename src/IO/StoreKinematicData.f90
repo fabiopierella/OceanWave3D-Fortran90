@@ -12,7 +12,6 @@ SUBROUTINE StoreKinematicData(Nx,Ny,Nz,io,it)
 !! By Allan P. Engsig-Karup.
 !<
 USE GlobalVariables
-USE hl_hdf5
 use kinematicsArray
 IMPLICIT NONE
 ! Input parameters
@@ -20,9 +19,9 @@ INTEGER :: Nx, Ny, Nz, io, it
 ! Local variables
 INTEGER ::  i, j, k, i0, i1, is, j0, j1, js
 INTEGER :: FOUT, i3, iWriteAt
-LOGICAL :: extend, hdf5_file_exists, write_kinematics
+LOGICAL :: extend, write_kinematics
 REAL(KIND=long), DIMENSION(:,:), POINTER :: x, y, h, hx, hy, eta, etax, etay
-REAL(KIND=long), DIMENSION(:), POINTER   :: z, tmpxval
+REAL(KIND=long), DIMENSION(:), POINTER   :: z, tmpxval, tmpyval
 ! Automatic work space
 REAL(KIND=long) :: U(Nz,Nx,Ny), V(Nz,Nx,Ny), W(Nz,Nx,Ny), d(Nx,Ny)
 REAL(KIND=long) :: tmpx(Nx), tmpy(Ny)
@@ -41,7 +40,7 @@ INTEGER(HSIZE_T), SAVE :: maxdims1(1), maxdims2(3), maxdims3(4), &
                     
 INTEGER(HSIZE_T):: nx_save, ny_save, nz_save, onei = 1, zeroi = 0
 REAL(KIND=long) :: x3d(Nz, Ny, Nx), y3d(Nz, Ny, Nx), z3d(Nz, Ny, Nx)
-REAL(KIND=long), ALLOCATABLE, SAVE :: timeStoredInHDF5(:), dummy2d(:,:), &
+REAL(KIND=long), ALLOCATABLE, SAVE :: dummy2d(:,:), &
    dummy3d(:,:,:), dummy4d(:,:,:,:)
 ! Assign the local pointers
 !
@@ -105,7 +104,12 @@ ELSE
   IF(Ny>1)THEN
      ALLOCATE( Output(io)%stencily(2*beta+1) )
      ! weights in stream_func_wave_finite.f
-     CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,Output(io)%y)
+     ALLOCATE( tmpyval(2*beta+1) )
+  tmpyval = y(Output(io)%idx(3) : Output(io)%idx(4),1)
+  tmpyval(beta+1) = Output(io)%y
+   !CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,Output(io)%y) 
+   ! FP221115: changed for compaitibilty with GCC11.3
+   CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,tmpyval)
   ENDIF
   ! formattype=22
   i0=Output(io)%idx(1) ! xmin

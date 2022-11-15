@@ -54,7 +54,7 @@ SUBROUTINE random_wave_coefficients(i_spec, nt, beta0, dt, dx, Tp, Hs, depth, &
   !
   IF(i_spec==0 .or. i_spec==30)THEN 
      ! A long-crested P-M spectrum
-     CALL build_coeff(eta0, nt, Hs, Tp, dt, seed, seed2, 0)
+     CALL build_coeff(eta0, nt, Hs, Tp, dt, seed, seed2, 0, one)
   ELSEIf(i_spec==1 .or. i_spec==31 .or. i_spec==3)THEN
      ! A long-crested JONSWAP spectrum
      CALL build_coeff(eta0, nt, Hs, Tp, dt, seed, seed2, 1,gamma_jonswap)
