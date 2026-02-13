@@ -4,7 +4,7 @@
 #
 
 # Program name
-PROGNAME = OceanWave3D-Fortran-Release
+PROGNAME = OceanWave3D-Fortran
 LIBNAME  = libOceanWave3D_botp.so
 
 # Installation directory
@@ -15,7 +15,7 @@ LIBINSTALLDIR = $(HOME)/lib
 BUILDDIR = $(PWD)/buildRelease
 
 FC = gfortran
-PLATFORM = jess
+PLATFORM = wsl
 # Then the blocks for specific users (this clobbers the above info.)
 # -lma41  -lma27 -lmi24 -lhsl_mi20
 ifeq ($(PLATFORM),gbar)
@@ -28,10 +28,14 @@ ifeq ($(PLATFORM),jess)
   DBFLAGS = -I$(EBROOTHDF5)/include -gdwarf-2
   OPTFLAGS = -I$(EBROOTHDF5)/include
 endif
-   
+ifeq ($(PLATFORM),wsl)
+  DBFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include
+  OPTFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include
+endif
+
 ifeq ($(FC),gfortran)
   # fabpi machine, gfortran
-  LIBDIRS  = -L$(HOME)/lib/  -L$(MODULE_OPENBLAS_LIB_DIR)
+  LIBDIRS  = -L$(HOME)/lib/  -L/usr/lib/x86_64-linux-gnu/hdf5/serial
   # LINLIB   += -lharwell -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
   LINLIB   += -lskit -lopenblas -lhdf5 -lhdf5_fortran -lhdf5_hl
   DBFLAGS  += -pg -g -fbounds-check -ffpe-trap=invalid,zero,overflow -ffree-line-length-none  -fno-automatic

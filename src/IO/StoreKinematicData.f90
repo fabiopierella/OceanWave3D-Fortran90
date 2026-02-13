@@ -124,7 +124,7 @@ ELSE
   ALLOCATE( tmpxval(2*alpha+1) )
   tmpxval = x(Output(io)%idx(1) : Output(io)%idx(2),1)
   tmpxval(alpha+1) = Output(io)%x
-  CALL TaylorFDStencils1DArbitrary(alpha,alpha,0,Output(io)%stencilx,tmpxval)
+  CALL TaylorFDStencils1DArbitrary(alpha,alpha,0,Output(io)%stencilx,tmpxval(1))
 !  Output(io)%stencilx = zero
 !  print*,'stencilx = ',Output(io)%stencilx
   IF(Ny>1)THEN
@@ -224,60 +224,60 @@ IF(it==0)THEN
          inquire(FILE=h5file, EXIST=hdf5_file_exists)
          if ((IC.NE.-1).OR.(.NOT.(hdf5_file_exists))) then
             ! Create
-            call h5_dataset_create_chunked(h5file, 'time', INT(1, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'time', INT(1, 4), &
                      & extdims1, maxdims1, chunkdims1) 
             ! Surface elevation variables
-            call h5_dataset_create_chunked(h5file, 'surface_elevation', INT(3, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'surface_elevation', INT(3, 4), &
                      & extdims2, maxdims2, chunkdims2)
-            call h5_dataset_create_chunked(h5file, 'surface_elevation_derivative_etax', INT(3, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'surface_elevation_derivative_etax', INT(3, 4), &
                      & extdims2, maxdims2, chunkdims2)
-            call h5_dataset_create_chunked(h5file, 'surface_elevation_derivative_etay', INT(3, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'surface_elevation_derivative_etay', INT(3, 4), &
                      & extdims2, maxdims2, chunkdims2)
             ! Position variables 
-            call h5_dataset_create_chunked(h5file, 'position_x', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'position_x', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'position_y', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'position_y', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'position_z', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'position_z', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
             ! Velocity variables 
-            call h5_dataset_create_chunked(h5file, 'velocity_u', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_u', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_v', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_v', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_w', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_w', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
             ! Velocity x-gradient variables 
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_ux', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_ux', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vx', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vx', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
             ! Velocity y-gradient variables 
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_uy', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_uy', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vy', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vy', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
             ! Velocity z-gradient variables 
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_uz', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_uz', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vz', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vz', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_wz', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_wz', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
 
             ! Velocity kinematic accelerations
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_ut', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_ut', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vt', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_vt', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
-            call h5_dataset_create_chunked(h5file, 'velocity_derivative_wt', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'velocity_derivative_wt', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
 
             ! dynamic pressure
-            call h5_dataset_create_chunked(h5file, 'dynamic_pressure_pdyn', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'dynamic_pressure_pdyn', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
             ! potential
-            call h5_dataset_create_chunked(h5file, 'potential_phi', INT(4, HID_T), &
+            call h5_dataset_create_chunked(h5file, 'potential_phi', INT(4, 4), &
                      & extdims3, maxdims3, chunkdims3)      
             ! Write the first timestep
             ! call h5_write(h5file, 'time', (/it*dt/))

@@ -1,4 +1,4 @@
- SUBROUTINE build_coeff (ETA, N, Hs, Tp, DELT, SEED, seed2, i_spec,gamma)
+ SUBROUTINE build_coeff (ETA, N, Hs, Tp, DELT, SEED, seed2, i_spec, gamma)
 !
 ! This subroutine returns Z(w), the Fourier transform of
 ! the wave elevation, zeta(t).  The coefficients are based on

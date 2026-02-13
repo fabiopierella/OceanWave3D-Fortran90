@@ -99,10 +99,11 @@ module HL_HDF5 !High level HDF5 interface
     subroutine h5_dataset_dimension_all(file_name, dataset_name, dataset_dimension)
         ! Returns the dataset dimension in a certain direction
         character(*) :: file_name, dataset_name
-        integer(HID_T) :: file_id, dataset_id, dataspace_id, rank
+        integer(HID_T) :: file_id, dataset_id, dataspace_id
         logical :: dummy
         integer(HSIZE_T),allocatable :: maxdims(:), dataset_dimension(:)
         integer(HSIZE_T) :: dimId
+        integer :: rank
         
         call h5fopen_f(file_name, H5F_ACC_RDWR_F, file_id, hdferr);
         dummy = check_return_value(hdferr, "h5_dataset_dimensions", "h5fopen")
@@ -136,10 +137,11 @@ module HL_HDF5 !High level HDF5 interface
     subroutine h5_dataset_dimension(file_name, dataset_name, dimId, dataset_dimension)
         ! Returns the dataset dimension in a certain direction
         character(*) :: file_name, dataset_name
-        integer(HID_T) :: file_id, dataset_id, dataspace_id, rank
+        integer(HID_T) :: file_id, dataset_id, dataspace_id
         logical :: dummy
         integer(HSIZE_T),allocatable :: dims(:), maxdims(:)
         integer(HSIZE_T) :: dataset_dimension, dimId
+        integer :: rank
 
         call h5fopen_f(file_name, H5F_ACC_RDWR_F, file_id, hdferr);
         dummy = check_return_value(hdferr, "h5_dataset_dimensions", "h5fopen")
@@ -365,9 +367,9 @@ end subroutine h5_write_2d_at_step
             h5count(:), h5block(:), h5stride(:), h5start(:), dimsr(:), &
             maxdims(:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, creation_id, rank, memspace
+            dataspace_id, creation_id, memspace
         logical :: dummy
-        integer :: layout, i
+        integer :: layout, i, rank
 
         include "h5_read_block.f90"
 
@@ -383,9 +385,9 @@ end subroutine h5_write_2d_at_step
             h5count(:), h5block(:), h5stride(:), h5start(:), dimsr(:), &
             maxdims(:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, creation_id, rank, memspace
+            dataspace_id, creation_id, memspace
         logical :: dummy
-        integer :: layout, i
+        integer :: layout, i, rank
 
         include "h5_read_block.f90"  
 
@@ -430,7 +432,7 @@ end subroutine h5_write_2d_at_step
 
     function check_return_value(status, calling_function, returning_function)
         character(*) :: calling_function, returning_function
-        integer(HID_T) :: status
+        integer :: status
         logical :: check_return_value
 
         if (status < 0) then
