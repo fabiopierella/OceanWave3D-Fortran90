@@ -139,8 +139,11 @@ SUBROUTINE OceanWave3DTakeATimeStep
            CALL StoreData(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,Wavefield%E+Wavefield%E_I,&
                 Wavefield%P+Wavefield%P_I_s,FineGrid,2*tstep+1,formattype)
         ELSE
-           CALL StoreData(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,Wavefield%E,Wavefield%P,FineGrid,tstep,formattype)
-!	   CALL StoreDataVTK(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,Wavefield%E,Wavefield%P,FineGrid,tstep,formattype)
+           IF (formattype==50) THEN
+              CALL StoreDataVTK(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,Wavefield%E,Wavefield%P,FineGrid,tstep,formattype)
+           ELSE
+              CALL StoreData(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,Wavefield%E,Wavefield%P,FineGrid,tstep,formattype)
+           END IF
         !
         ! Write the file OceanWave3D.end, which can be used as initial conditions for a hot start
         WRITE(*,FMT='(A)') 'Writing OceanWave3D.end file, for possible restart.'

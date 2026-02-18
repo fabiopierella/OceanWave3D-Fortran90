@@ -55,13 +55,31 @@ OBJECTS := $(OBJECTS:.f90=.o)
 OBJECTSNODIR = $(notdir $(OBJECTS))
 OBJECTSBUILDDIR = $(addprefix $(BUILDDIR)/,$(OBJECTSNODIR))
 
-# Third-party .mod files to copy into build dir
-VTKMOD = thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod
+# --- LIB_VTK_IO third-party library ---
+VTKDIR    = thirdpartylibs/LIB_VTK_IO
+VTKSRC    = $(VTKDIR)/source
+VTKLIB    = $(VTKDIR)/static/Lib_VTK_IO.a
+VTKMOD    = $(VTKDIR)/static/lib_vtk_io.mod
+VTKOBJS   = $(BUILDDIR)/ir_precision.o $(BUILDDIR)/lib_vtk_io.o
+
+# Build VTK library objects into our build dir, then create static archive
+$(BUILDDIR)/ir_precision.o: $(VTKSRC)/IR_Precision.f90 | $(BUILDDIR)
+	$(FC) $(FFLAGS) -cpp -Dr16p -c $< -o $@
+	$(move_mods)
+
+$(BUILDDIR)/lib_vtk_io.o: $(VTKSRC)/Lib_VTK_IO.f90 $(BUILDDIR)/ir_precision.o | $(BUILDDIR)
+	$(FC) $(FFLAGS) -cpp -Dr16p -c $< -o $@ $(INCLUDEDIRS)
+	$(move_mods)
+
+$(VTKLIB): $(VTKOBJS)
+	@mkdir -p $(VTKDIR)/static
+	ar rcs $(VTKLIB) $(VTKOBJS)
+	@cp $(BUILDDIR)/lib_vtk_io.mod $(VTKDIR)/static/
+	@echo "LIB_VTK_IO built successfully."
 
 # Ensure build directory exists (order-only prerequisite)
 $(BUILDDIR):
 	@mkdir -p $(BUILDDIR)
-	@if [ -f "$(VTKMOD)" ]; then cp $(VTKMOD) $(BUILDDIR)/; fi
 
 # Ensure install directory exists
 $(INSTALLDIR):
@@ -74,31 +92,34 @@ default:
 
 # Targets for linking
 Release: FFLAGS = $(OPTFLAGS)
-Release: $(INSTALLDIR) $(OBJECTSBUILDDIR)
+Release: $(INSTALLDIR) $(VTKLIB) $(OBJECTSBUILDDIR)
 	@echo "*** Linking OceanWave3D (Release)... ***"
-	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
+	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(VTKLIB) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
 	@echo "OceanWave3D has been built successfully."
 
 Debug: FFLAGS = $(DBFLAGS)
-Debug: $(INSTALLDIR) $(OBJECTSBUILDDIR)
+Debug: $(INSTALLDIR) $(VTKLIB) $(OBJECTSBUILDDIR)
 	@echo "*** Linking OceanWave3D (Debug)... ***"
-	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
+	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(VTKLIB) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
 	@echo "OceanWave3D has been built successfully (Debug)."
 
 all: Release
 
 sharedLib: FFLAGS = $(SHLIBFLAGS)
-sharedLib: $(OBJECTSBUILDDIR)
+sharedLib: $(VTKLIB) $(OBJECTSBUILDDIR)
 	@echo "*** Linking OceanWave3D shared library... ***"
-	$(FC) $(FFLAGS) -o $(LIBINSTALLDIR)/$(LIBNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
+	$(FC) $(FFLAGS) -o $(LIBINSTALLDIR)/$(LIBNAME) $(OBJECTSBUILDDIR) $(VTKLIB) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
 	@echo "Shared library for OceanWave3D has been built successfully."
 
 # Compile only
-compile: $(OBJECTSBUILDDIR)
+compile: $(VTKLIB) $(OBJECTSBUILDDIR)
 
 clean:
 	rm -rf $(BUILDDIR)
 	rm -f $(INSTALLDIR)/$(PROGNAME)
+
+cleanall: clean
+	rm -f $(VTKLIB) $(VTKMOD)
 
 # Move any .mod files generated in the source root into the build directory
 define move_mods

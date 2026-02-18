@@ -335,7 +335,7 @@ SUBROUTINE ReadInputFileParameters
              STATUS='UNKNOWN',FORM='UNFORMATTED',ACCESS='SEQUENTIAL')
      END Do
 
-  elseif(formattype==40) THEN ! h5 files save
+  elseif(formattype==40 .or. formattype==50) THEN ! h5 files save (formattype=50: VTK + h5)
    BACKSPACE(FILEIP(1))
    READ (FILEIP(1),*) StoreDataONOFF, formattype, iKinematics, nOutFiles
    Allocate (Output(nOutFiles))
