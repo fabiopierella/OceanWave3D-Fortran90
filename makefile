@@ -9,9 +9,7 @@ include common.mk
 
 # Source files
 # subdirectories - complete directory-tree should be included
-#
-# Perhaps use perl script sfmakedepend in the future for dependency list?
-SOURCES := 
+SOURCES :=
 include src/variabledefs/makefile.inc
 include src/utilities/makefile.inc
 include src/analyticalsolutions/makefile.inc
@@ -29,9 +27,7 @@ include src/iterative/makefile.inc
 include src/OpenFoam/makefile.inc
 
 # Search paths for source dependencies
-VPATH  = src/variabledefs 
-VPATH += src/analyticalsolutions
-VPATH += src/variabledefs
+VPATH  = src/variabledefs
 VPATH += src/analyticalsolutions
 VPATH += src/curvilinear
 VPATH += src/fft
@@ -56,86 +52,64 @@ INCLUDEDIRS += -I$(BUILDDIR)
 # Object files
 OBJECTS := $(SOURCES:.f=.o)
 OBJECTS := $(OBJECTS:.f90=.o)
-#OBJECTS := $(OBJECTS:.f=.o)
 OBJECTSNODIR = $(notdir $(OBJECTS))
 OBJECTSBUILDDIR = $(addprefix $(BUILDDIR)/,$(OBJECTSNODIR))
 
-#
-#test: $(OBJECTSBUILDDIR)
-#	@echo $(OBJECTSBUILDDIR)
+# Third-party .mod files to copy into build dir
+VTKMOD = thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod
 
-# default target creates directory
+# Ensure build directory exists (order-only prerequisite)
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
+	@if [ -f "$(VTKMOD)" ]; then cp $(VTKMOD) $(BUILDDIR)/; fi
+
+# Ensure install directory exists
+$(INSTALLDIR):
+	@mkdir -p $(INSTALLDIR)
+
+# Default target
 default:
-	-@mkdir -p -v $(BUILDDIR)
-	@echo "To install OceanWave3D type 'make Debug|Release'"
+	@echo "To build OceanWave3D type 'make Release' or 'make Debug'"
+	@echo "To clean build artifacts type 'make clean'"
 
 # Targets for linking
 Release: FFLAGS = $(OPTFLAGS)
-Release: $(OBJECTSBUILDDIR)
-	@if ls *.mod &> /dev/null; then \
-	mv -v ./*.mod $(BUILDDIR); \
-	cp -v ./thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod $(BUILDDIR); \
-	fi
-	@echo "*** Starting linking of files for OceanWave3D (Release)... ***"
-	@$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS) 	
+Release: $(INSTALLDIR) $(OBJECTSBUILDDIR)
+	@echo "*** Linking OceanWave3D (Release)... ***"
+	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
 	@echo "OceanWave3D has been built successfully."
 
 Debug: FFLAGS = $(DBFLAGS)
-Debug: $(OBJECTSBUILDDIR) 
-	@if ls *.mod &> /dev/null; then \
-	mv -v *.mod $(BUILDDIR); \
-	cp -v thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod $(BUILDDIR); \
-	fi
-	@echo "*** Starting linking of files for OceanWave3D (Debug)... ***"
-	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS) 	
+Debug: $(INSTALLDIR) $(OBJECTSBUILDDIR)
+	@echo "*** Linking OceanWave3D (Debug)... ***"
+	$(FC) $(FFLAGS) -o $(INSTALLDIR)/$(PROGNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
+	@echo "OceanWave3D has been built successfully (Debug)."
 
 all: Release
 
-
 sharedLib: FFLAGS = $(SHLIBFLAGS)
 sharedLib: $(OBJECTSBUILDDIR)
-	@if ls *.mod &> /dev/null; then \
-	mv -v ./*.mod $(BUILDDIR); \
-	cp -v ./thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod $(BUILDDIR); \
-	fi
-	@echo "*** Starting linking of files for OceanWave3D (Release)... ***"
-	@$(FC) $(FFLAGS) -o $(FOAM_USER_LIBBIN)/$(LIBNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS) 	
+	@echo "*** Linking OceanWave3D shared library... ***"
+	$(FC) $(FFLAGS) -o $(LIBINSTALLDIR)/$(LIBNAME) $(OBJECTSBUILDDIR) $(LIBDIRS) $(LINLIB) $(INCLUDEDIRS)
 	@echo "Shared library for OceanWave3D has been built successfully."
 
-
-
-# Compile only - compile all source file to build directory
+# Compile only
 compile: $(OBJECTSBUILDDIR)
 
 clean:
-	rm -f $(BUILDDIR)/*.o 
-	rm -f $(BUILDDIR)/*.mod 
+	rm -rf $(BUILDDIR)
 	rm -f $(INSTALLDIR)/$(PROGNAME)
 
-#
-# Special source dependencies
-#
+# Move any .mod files generated in the source root into the build directory
+define move_mods
+	@if ls *.mod 1>/dev/null 2>&1; then mv *.mod $(BUILDDIR)/; fi
+endef
 
-# For defining generic rules:
-#
-# $@ - The current target's full name.
-# $* - The current target's file name without a suffix.
-# $? - A list of the current target's changed dependencies.
-# $< - A single changed dependency of the current target.
-
-# Generic compilation rules
-$(BUILDDIR)/%.o: %.f 
+# Generic compilation rules (order-only prerequisite on BUILDDIR)
+$(BUILDDIR)/%.o: %.f | $(BUILDDIR)
 	$(FC) $(FFLAGS) -c $< -o $@ $(INCLUDEDIRS)
+	$(move_mods)
 
-$(BUILDDIR)/%.o: %.f90
-	@if ls *.mod &> /dev/null; then \
-	mv -v *.mod $(BUILDDIR); \
-	cp -v thirdpartylibs/LIB_VTK_IO/static/lib_vtk_io.mod $(BUILDDIR); \
-	fi
+$(BUILDDIR)/%.o: %.f90 | $(BUILDDIR)
 	$(FC) $(FFLAGS) -c $< -o $@ $(INCLUDEDIRS)
-
-$(BUILDDIR)/%.mod: %.f
-	$(FC) $(FFLAGS) -c $< -o $@ $(INCLUDEDIRS)
-
-$(BUILDDIR)/%.mod: %.f90
-	$(FC) $(FFLAGS) -c $< -o $@ $(INCLUDEDIRS)
+	$(move_mods)
