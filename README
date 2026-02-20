@@ -49,6 +49,11 @@ Unix-based clients:
    $> $HOME/bin/OceanWave3D Whalin3D.inp
    to generate output from test case.
 
+Tips on installation of third-party libraries:
+ * libsparskit => compile with fPIE (correct)
+ * libharwell => compile 
+ * install openblas, install libhdf5, install libvtkio (optional for visualization of output)
+
 3. Project Layout
 -----------------
 
