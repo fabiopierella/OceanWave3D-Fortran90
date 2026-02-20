@@ -554,7 +554,7 @@ SUBROUTINE OceanWave3DT0Setup
   ! each time-step. 
   !
   If(iKinematics/=0)THEN
-        IF (formattype==40) THEN ! Store binary kinematics files or hdf5 files
+        IF (formattype==40 .OR. formattype==50) THEN ! Store HDF5 kinematics files (formattype=50: VTK + HDF5)
              DO i=1,nOutFiles
                         Print *, 'Initial t=0 data to kinematics file...'
                         CALL StoreKinematicDataHDF5(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &

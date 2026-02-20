@@ -193,7 +193,7 @@ SUBROUTINE OceanWave3DTakeATimeStep
   ! If kinematics output is requested save it
   !
   IF(iKinematics/=0)THEN
-      IF (formattype==40) THEN! Store binary kinematics files
+      IF (formattype==40 .OR. formattype==50) THEN! Store HDF5 kinematics files (formattype=50: VTK + HDF5)
          Do i=1,nOutFiles
             CALL StoreKinematicDataHDF5(FineGrid%Nx+2*GhostGridX,FineGrid%Ny+2*GhostGridY,  &
                   FineGrid%Nz+GhostGridZ,i,tstep)
