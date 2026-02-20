@@ -204,9 +204,12 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
         end do
 
         extended_dimension_id = 4
-        call h5_write(h5file, 'position_x', reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))              
-        call h5_write(h5file, 'position_y', reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
-        call h5_write(h5file, 'position_z', reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
+        call h5_write(h5file, 'position_x', &
+            reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))              
+        call h5_write(h5file, 'position_y', &
+            reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
+        call h5_write(h5file, 'position_z', &
+            reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/)))
 
         ! call increment_timestep_counter(Zones(io))
         ! n_overwrites(io) = 0 ! we do not expect to overwrite any sample here since we only append
@@ -346,9 +349,12 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
             ! Zones(io)%Kinematics(nKinSteps)%Y = y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
             ! Zones(io)%Kinematics(nKinSteps)%Z = z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is)
 
-            Zones(io)%Kinematics(nKinSteps)%X = reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
-            Zones(io)%Kinematics(nKinSteps)%Y = reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
-            Zones(io)%Kinematics(nKinSteps)%Z = reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
+            Zones(io)%Kinematics(nKinSteps)%X = &
+                reshape(x3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
+            Zones(io)%Kinematics(nKinSteps)%Y = &
+                reshape(y3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
+            Zones(io)%Kinematics(nKinSteps)%Z = &
+                reshape(z3d(1+GhostGridZ:, j0:j1:js, i0:i1:is), (/nz_save, nx_save, ny_save/), order=(/1,3,2/))
 
             Zones(io)%Kinematics(nKinSteps)%U = U(1+GhostGridZ:, i0:i1:is, j0:j1:js);
             Zones(io)%Kinematics(nKinSteps)%V = V(1+GhostGridZ:, i0:i1:is, j0:j1:js);
@@ -393,7 +399,8 @@ SUBROUTINE StoreKinematicDataHDF5(Nx,Ny,Nz,io,it)
     
                     extended_dimension_id = 1
                     ! Save previous 100 time steps
-                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, (/(Zones(io)%Kinematics(j)%time, j=1, nOutputKinSteps, Output(io)%tstride)/))
+                    call h5_extend(h5file, 'time', extended_dimension_id, extdims1, &
+                        (/(Zones(io)%Kinematics(j)%time, j=1, nOutputKinSteps, Output(io)%tstride)/))
 
                     extended_dimension_id = 4
                     
