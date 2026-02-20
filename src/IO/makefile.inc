@@ -11,6 +11,7 @@ SOURCES += $(LDIR)/StoreDataAscii.f90
 SOURCES += $(LDIR)/StoreSparseMatrix.f90
 SOURCES += $(LDIR)/GatherData.f90
 SOURCES += $(LDIR)/StoreKinematicData.f90		
+SOURCES += $(LDIR)/StoreKinematicDataHDF5.f90		
 SOURCES += $(LDIR)/ReadInputFileParameters.f90	
 SOURCES += $(LDIR)/StoreRealArray.f90
 SOURCES += $(LDIR)/StoreWaveGauges.f90

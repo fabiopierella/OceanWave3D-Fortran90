@@ -337,11 +337,11 @@ SUBROUTINE ReadInputFileParameters
 
   elseif(formattype==40 .or. formattype==50) THEN ! h5 files save (formattype=50: VTK + h5)
    BACKSPACE(FILEIP(1))
-   READ (FILEIP(1),*) StoreDataONOFF, formattype, iKinematics, nOutFiles
+   READ (FILEIP(1),*) StoreDataONOFF, formattype, iKinematics, nOutFiles, n_buffer_timesteps
    Allocate (Output(nOutFiles))
    ! Allocate the fileNames 
    allocate(fntH5(nOutFiles))
-   fntH5 = (/(i,i=0,nOutFiles)/)
+   fntH5 = (/(int(i,8),i=0,nOutFiles)/)
 
    IF (nOutFiles>999)THEN
       print *, 'Max. 999 kinematics output files at this point.'

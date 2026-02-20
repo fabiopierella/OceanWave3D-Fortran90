@@ -3,6 +3,7 @@ module HL_HDF5 !High level HDF5 interface
 
     USE HDF5 ! This module contains all necessary modules 
     USE ISO_C_BINDING
+    USE GlobalVariables, only : chunk_dim, n_chunks_in_cache
     IMPLICIT NONE
     INTEGER     ::   hdferr ! Error flag
 
@@ -31,6 +32,7 @@ module HL_HDF5 !High level HDF5 interface
         module procedure h5_extend_1d
         module procedure h5_extend_2d
         module procedure h5_extend_3d
+        module procedure h5_extend_4d
     end interface     
 
     contains
@@ -178,36 +180,53 @@ module HL_HDF5 !High level HDF5 interface
 
         character(*) :: file_name, dataset_name
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, prop_id, plist_id
-        logical :: dummy
+            dataspace_id, prop_id, plist_id, filter_id
+        logical :: dummy, avail
         integer(HSIZE_T) :: dims(:), maxdims(:), chunk_dims(:), &
             n_bytes_chunk
 
-        integer :: rank
+        integer :: rank, filter_info
         ! real(kind=8) :: data(:,:,:,:)
 
         call h5fopen_f(file_name, H5F_ACC_RDWR_F, file_id, hdferr);
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5fopen")
+
+        !  Check if gzip compression is available and can be used for both
+        !  compression and decompression.  Normally we do not perform error
+        !  checking in these examples for the sake of clarity, but in this
+        !  case we will make an exception because this filter is an
+        !  optional part of the hdf5 library.
+        !  
+        CALL h5zfilter_avail_f(H5Z_FILTER_DEFLATE_F, avail, hdferr)
+
+        IF (.NOT.avail) THEN
+            WRITE(*,'("gzip filter not available.",/)')
+            STOP
+         ENDIF
+         CALL h5zget_filter_info_f(H5Z_FILTER_DEFLATE_F, filter_info, hdferr)
 
         call h5screate_simple_f(rank, dims, dataspace_id, hdferr, maxdims)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5screate_simple_f")
 
         call h5pcreate_f(H5P_DATASET_CREATE_F, prop_id, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5p_create_f")        
+        ! CALL h5pset_deflate_f(prop_id, 5, hdferr)
         call h5pset_chunk_f(prop_id, size(chunk_dims), chunk_dims, hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk")
 
-        call h5dcreate_f(file_id, dataset_name, H5T_NATIVE_DOUBLE, dataspace_id, dataset_id, hdferr, &
-                    &prop_id, H5P_DEFAULT_F, H5P_DEFAULT_F)
+        call h5dcreate_f(file_id, dataset_name, H5T_NATIVE_DOUBLE, dataspace_id, dataset_id, &
+                    hdferr, prop_id, H5P_DEFAULT_F, H5P_DEFAULT_F)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dcreate_f")
 
-        ! Storage in double precision: 8 bytes * 2 times the chunk in the cache * 
-        ! the size of the chunk
-        n_bytes_chunk = 8*5*product(chunk_dims) 
-
         call h5dget_access_plist_f(dataset_id, plist_id, hdferr)
+        dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5dget_access_plist_f")
 
-        call h5pset_chunk_cache_f(plist_id, int(100,8), n_bytes_chunk, 1.0 , hdferr)
+        ! Storage in double precision: 8 bytes * n_bytes_cache chunks in the cache * 
+        ! the size of the chunk
+        n_bytes_chunk = n_chunks_in_cache*8*product(chunk_dims)
+        ! The second parameter should be hundred times the nr of chunks that can fit
+        ! in n_butes_chunk
+        call h5pset_chunk_cache_f(plist_id, int(n_chunks_in_cache*101,8), n_bytes_chunk, 1.0 , hdferr)
         dummy = check_return_value(hdferr, "h5_dataset_create_chunked", "h5pset_chunk_cache")
 
         call h5dclose_f(dataset_id, hdferr)
@@ -225,6 +244,50 @@ module HL_HDF5 !High level HDF5 interface
         
     end subroutine h5_dataset_create_chunked
 
+    subroutine h5_create_hard_link(file_name, dataset_target, dataset_source)
+
+            character(*) :: file_name, dataset_target, dataset_source
+            integer(HID_T) :: file_id, dataset_target_id, &
+                dataspace_id, prop_id, plist_id, filter_id
+            logical :: dummy, avail
+    
+            integer :: rank, filter_info
+            
+
+            call h5fopen_f(file_name, H5F_ACC_RDWR_F, file_id, hdferr);
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5fopen")
+
+            ! call h5dopen_f(file_id, dataset_target, dataset_target_id, hdferr)
+            ! dummy = check_return_value(hdferr, "h5_create_hard_link", "h5dopen_f")
+
+            call h5lcreate_hard_f(file_id, dataset_target, file_id, dataset_source, hdferr)
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5lcreate_hard_f")
+
+            call h5fclose_f(file_id, hdferr)
+            dummy = check_return_value(hdferr, "h5_create_hard_link", "h5fclose")
+    
+    end subroutine h5_create_hard_link
+
+    subroutine h5_extend_4d(file_name, dataset_name, extended_dimension_id, &
+        dims_ext, data)
+
+    ! Data must have the same bounds of dims_ext
+    ! Routine to insert a 3D array at a location
+
+    character(*) :: file_name, dataset_name
+    real(kind=8) :: data(:,:,:,:)
+    integer(HID_T) :: file_id, dataset_id, &
+        dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+        plist_id, n_bytes_chunk
+    logical :: dummy
+    integer(HSIZE_T) :: dims_ext(:)
+    integer(HSIZE_T),allocatable :: maxdims(:), &
+            dims_old(:), dims_new(:), offset(:), chunk_dims(:)
+    integer :: rank
+
+    include "h5_extend.f90"
+
+end subroutine h5_extend_4d
 
     ! 3D routines
     subroutine h5_write_3d(file_name, dataset_name, data)
@@ -265,11 +328,12 @@ module HL_HDF5 !High level HDF5 interface
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:,:,:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"
@@ -315,11 +379,12 @@ end subroutine h5_write_2d_at_step
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:,:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"
@@ -419,11 +484,12 @@ end subroutine h5_write_2d_at_step
         character(*) :: file_name, dataset_name
         real(kind=8) :: data(:)
         integer(HID_T) :: file_id, dataset_id, &
-            dataspace_id, extended_dimension_id, memspace_id
+            dataspace_id, extended_dimension_id, memspace_id, prop_id, &
+            plist_id, n_bytes_chunk
         logical :: dummy
         integer(HSIZE_T) :: dims_ext(:)
         integer(HSIZE_T),allocatable :: maxdims(:), &
-                dims_old(:), dims_new(:), offset(:)
+                dims_old(:), dims_new(:), offset(:), chunk_dims(:)
         integer :: rank
 
         include "h5_extend.f90"

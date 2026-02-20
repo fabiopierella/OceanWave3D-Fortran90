@@ -47,4 +47,11 @@ ifeq ($(FC),ifort)
   SHLIBFLAGS = -shared -fPIC -O3
 endif
 
+ifeq ($(USER),fabpi)
+  LIBDIRS  = -L$(HOME)/lib/  -L/usr/lib/x86_64-linux-gnu/hdf5/serial
+  LINLIB   = -lopenblas -lskit -lhdf5 -lhdf5_fortran -lhdf5_hl
+  DBFLAGS  = -g -I/usr/include/hdf5/serial
+  OPTFLAGS = -O3 -I/usr/include/hdf5/serial
+endif
+
 print-%  : ; @echo $* = $($*)
