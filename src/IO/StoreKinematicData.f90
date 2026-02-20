@@ -109,7 +109,7 @@ ELSE
   tmpyval(beta+1) = Output(io)%y
    !CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,Output(io)%y) 
    ! FP221115: changed for compaitibilty with GCC11.3
-   CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,tmpyval)
+   CALL TaylorFDStencils1DArbitrary(beta,beta,0,Output(io)%stencily,tmpyval(1))
   ENDIF
   ! formattype=22
   i0=Output(io)%idx(1) ! xmin

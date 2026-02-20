@@ -197,7 +197,8 @@ SUBROUTINE funPressureTerm(t,g,Nx,Ny,FineGrid,Wavefield)
      if (t>zero)then
         Do j=j0,j1
            do i=i0,i1
-              Wavefield%P0(i,j) = (half*(Wavefield%Px(i,j)**2+Wavefield%Py(i,j)**2-Wavefield%W(i,j)**2*(one + Wavefield%Ex(i,j)**2 + Wavefield%Ey(i,j)**2))+g*Wavefield%E(i,j))
+              Wavefield%P0(i,j) = (half*(Wavefield%Px(i,j)**2+Wavefield%Py(i,j)**2-Wavefield%W(i,j)**2*(one + Wavefield%Ex(i,j)**2 & 
+              + Wavefield%Ey(i,j)**2))+g*Wavefield%E(i,j))
               !Wavefield%P0(i,j) = (g*Wavefield%E(i,j))
            end do
         end do
